@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi Bingo Online 75</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #102040;
+  color: white;
+  text-align: center;
+  padding: 15px;
+}
+h1 { color: #ffd700; }
+button, select, input {
+  padding: 12px;
+  margin: 6px;
+  border-radius: 8px;
+  border: 0;
+  font-size: 16px;
+}
+button { background: #ffd700; cursor: pointer; }
+.panel {
+  background: #20365b;
+  padding: 15px;
+  border-radius: 15px;
+  margin: 15px auto;
+  max-width: 440px;
+}
+.carton {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+.celda {
+  background: white;
+  color: #142342;
+  padding: 14px 0;
+  border-radius: 5px;
+  font-weight: bold;
+}
+.marcada { background: #20c477; }
+.cabecera { background: #1769cc; color: white; }
+</style>
+</head>
+<body>
+<h1>🎱 MI BINGO ONLINE 75</h1>
+<div class="panel">
+  <h2>Jugador</h2>
+  <input id="nombre" placeholder="Tu nombre">
+  <button onclick="crearCarton()">Recibir mi cartón</button>
+  <p id="jugador"></p>
+  <div id="carton" class="carton"></div>
+</div>
+<div class="panel">
+  <h2>🎤 Panel del anfitrión</h2>
+  <select id="figura">
+    <option>Cuadro pequeño</option>
+    <option>Cuadro grande</option>
+    <option>Cruz pequeña</option>
+    <option>Cruz grande</option>
+    <option>Macheteado</option>
+    <option>Cuatro esquinas</option>
+  </select>
+  <p><button onclick="sacarBola()">Sacar bola</button></p>
+  <h1 id="bola">--</h1>
+  <p id="historial"></p>
+  <p id="resultado"></p>
+  <button onclick="reiniciar()">Nueva partida</button>
+</div>
+<script>
+let carton = [];
+let salidos = [];
+let nombre = "";
+const letras = ["B","I","N","G","O"];
+const figuras = {
+ "Cuadro pequeño":[1,2,6,7],
+ "Cuadro grande":[0,4,20,24],
+ "Cruz pequeña":[7,11,13,17],
+ "Cruz grande":[2,10,14,22],
+ "Macheteado":[0,6,18,24],
+ "Cuatro esquinas":[0,4,20,24]
+};
+function crearCarton(){
+ if(carton.length) return alert("Ya tienes un cartón");
+ nombre = document.getElementById("nombre").value.trim();
+ if(!nombre) return alert("Escribe tu nombre");
+ for(let c=0;c<5;c++){
+  let nums = Array.from({length:15},(_,i)=>c*15+i+1);
+  nums.sort(()=>Math.random()-0.5);
+  for(let r=0;r<5;r++) carton[r*5+c]=nums[r];
+ }
+ carton[12]=0;
+ document.getElementById("jugador").textContent=nombre;
+ dibujar();
+}
+function dibujar(){
+ const div=document.getElementById("carton");
+ div.innerHTML="";
+ letras.forEach(l=>{
+  let e=document.createElement("div");
+  e.className="celda cabecera";e.textContent=l;
+  div.appendChild(e);
+ });
+ carton.forEach((n,i)=>{
+  let e=document.createElement("div");
+  e.className="celda"+(n===0||salidos.includes(n)?" marcada":"");
+  e.textContent=n===0?"⭐":n;
+  div.appendChild(e);
+ });
+}
+function sacarBola(){
+ if(salidos.length===75) return alert("No quedan bolas");
+ let disponibles=Array.from({length:75},(_,i)=>i+1)
+ .filter(n=>!salidos.includes(n));
+ let n=disponibles[Math.floor(Math.random()*disponibles.length)];
+ salidos.push(n);
+ let c=Math.floor((n-1)/15);
+ document.getElementById("bola").textContent=letras[c]+"-"+n;
+ document.getElementById("historial").textContent=
+ "Bolas anunciadas: "+salidos.length;
+ if(carton.length){
+  dibujar();
+  let patron=figuras[document.getElementById("figura").value];
+  if(patron.every(i=>carton[i]===0||salidos.includes(carton[i]))){
+   document.getElementById("resultado").textContent="🎉 ¡BINGO! Ganó "+nombre;
+  }
+ }
+}
+function reiniciar(){
+ carton=[];salidos=[];nombre="";
+ document.getElementById("carton").innerHTML="";
+ document.getElementById("bola").textContent="--";
+ document.getElementById("historial").textContent="";
+ document.getElementById("resultado").textContent="";
+ document.getElementById("jugador").textContent="";
+}
+</script>
+</body>
+</html>
